@@ -1,9 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using HL7ResultsGateway.Domain.Services;
 using HL7ResultsGateway.Domain.Exceptions;
+using HL7ResultsGateway.Domain.Services;
+
+using Microsoft.Extensions.Logging;
 
 namespace HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
 
