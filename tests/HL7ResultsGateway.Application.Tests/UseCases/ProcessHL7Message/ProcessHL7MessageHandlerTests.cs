@@ -1,12 +1,13 @@
 ﻿using FluentAssertions;
-using Xunit;
-using Moq;
-using Microsoft.Extensions.Logging;
+
 using HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
-using HL7ResultsGateway.Domain.Services;
 using HL7ResultsGateway.Domain.Entities;
+using HL7ResultsGateway.Domain.Services;
 using HL7ResultsGateway.Domain.ValueObjects;
-using HL7ResultsGateway.Domain.Exceptions;
+
+using Microsoft.Extensions.Logging;
+
+using Moq;
 
 namespace HL7ResultsGateway.Application.Tests.UseCases.ProcessHL7Message;
 
