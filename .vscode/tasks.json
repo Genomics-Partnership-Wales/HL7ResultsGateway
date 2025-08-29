@@ -1,0 +1,10 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Create plan directory and implementation plan",
+			"type": "shell",
+			"command": "New-Item -ItemType Directory -Path 'plan' -Force; New-Item -ItemType File -Path 'plan/feature-azure-function-api-1.md' -Force"
+		}
+	]
+}
