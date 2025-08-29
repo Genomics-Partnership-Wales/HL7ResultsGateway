@@ -14,12 +14,11 @@ public class HL7MessageParser : IHL7MessageParser
             throw new ArgumentException("HL7 message cannot be null or empty", nameof(message));
         }
 
-        // Clean up the message (remove extra whitespace)
-        var cleanMessage = message.Replace("\r", "").Replace("\n", "");
-        var lines = cleanMessage.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                .Select(line => line.Trim())
-                                .Where(line => !string.IsNullOrEmpty(line))
-                                .ToArray();
+        // Clean up the message - handle both \r\n and \n line endings, and trim whitespace
+        var lines = message.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                           .Select(line => line.Trim())
+                           .Where(line => !string.IsNullOrEmpty(line))
+                           .ToArray();
 
         // Basic validation - must start with MSH
         if (lines.Length == 0 || !lines[0].StartsWith("MSH"))
@@ -68,11 +67,12 @@ public class HL7MessageParser : IHL7MessageParser
     private void ParsePIDSegment(string[] segments, HL7Result result)
     {
         // PID segment format: PID|SetId||PatientId||Name||DOB|Gender|||Address
-        if (segments.Length > 5)
+        if (segments.Length > 3)
         {
-            result.Patient.PatientId = segments[3]; // PatientId
+            // PatientId is in position 3 (0-based index)
+            result.Patient.PatientId = segments[3];
 
-            // Parse name (format: LAST^FIRST^MIDDLE)
+            // Parse name (format: LAST^FIRST^MIDDLE) - position 5
             if (segments.Length > 5 && !string.IsNullOrEmpty(segments[5]))
             {
                 var nameParts = segments[5].Split('^');
@@ -81,7 +81,7 @@ public class HL7MessageParser : IHL7MessageParser
                 if (nameParts.Length > 2) result.Patient.MiddleName = nameParts[2];
             }
 
-            // Parse DOB (format: YYYYMMDD)
+            // Parse DOB (format: YYYYMMDD) - position 7
             if (segments.Length > 7 && !string.IsNullOrEmpty(segments[7]))
             {
                 if (DateTime.TryParseExact(segments[7], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var dob))
@@ -90,7 +90,7 @@ public class HL7MessageParser : IHL7MessageParser
                 }
             }
 
-            // Parse Gender
+            // Parse Gender - position 8
             if (segments.Length > 8 && !string.IsNullOrEmpty(segments[8]))
             {
                 result.Patient.Gender = segments[8].ToUpper() switch
@@ -110,10 +110,10 @@ public class HL7MessageParser : IHL7MessageParser
         {
             var observation = new Observation();
 
-            // ValueType
+            // ValueType - position 2
             if (segments.Length > 2) observation.ValueType = segments[2];
 
-            // ObservationId and Description (format: CODE^DESCRIPTION)
+            // ObservationId and Description (format: CODE^DESCRIPTION) - position 3
             if (segments.Length > 3 && !string.IsNullOrEmpty(segments[3]))
             {
                 var observationParts = segments[3].Split('^');
@@ -121,16 +121,16 @@ public class HL7MessageParser : IHL7MessageParser
                 if (observationParts.Length > 1) observation.Description = observationParts[1];
             }
 
-            // Value
+            // Value - position 5
             if (segments.Length > 5) observation.Value = segments[5];
 
-            // Units
+            // Units - position 6
             if (segments.Length > 6) observation.Units = segments[6];
 
-            // Reference Range
+            // Reference Range - position 7
             if (segments.Length > 7) observation.ReferenceRange = segments[7];
 
-            // Abnormal Flags (N = Normal, A = Abnormal, etc.)
+            // Abnormal Flags (N = Normal, A = Abnormal, etc.) - position 8
             if (segments.Length > 8)
             {
                 observation.Status = segments[8].ToUpper() switch
