@@ -2,7 +2,7 @@
 
 public class HL7MessageParserTests
 {
-    private readonly HL7MessageParser _parser;
+    private readonly IHL7MessageParser _parser;
 
     public HL7MessageParserTests()
     {
