@@ -1,3 +1,6 @@
+
+using HL7ResultsGateway.Domain.ValueObjects;
+
 namespace HL7ResultsGateway.Domain.Entities;
 
 public class Patient
