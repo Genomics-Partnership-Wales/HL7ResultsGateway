@@ -2,6 +2,7 @@
 
 using HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
 using HL7ResultsGateway.Domain.Entities;
+using HL7ResultsGateway.Domain.Exceptions;
 using HL7ResultsGateway.Domain.Services;
 using HL7ResultsGateway.Domain.ValueObjects;
 
@@ -60,5 +61,93 @@ public class ProcessHL7MessageHandlerTests
         result.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
 
         _mockParser.Verify(x => x.ParseMessage(command.HL7Message), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithInvalidHL7Message_ShouldReturnFailureResult()
+    {
+        // Arrange
+        var command = new ProcessHL7MessageCommand("INVALID MESSAGE", "TestSource");
+        var expectedException = new HL7ParseException("Invalid HL7 message format");
+
+        _mockParser.Setup(x => x.ParseMessage(command.HL7Message))
+                  .Throws(expectedException);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.ParsedMessage.Should().BeNull();
+        result.ErrorMessage.Should().Contain("Invalid HL7 message format");
+        result.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        _mockParser.Verify(x => x.ParseMessage(command.HL7Message), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyMessage_ShouldReturnFailureResult()
+    {
+        // Arrange
+        var command = new ProcessHL7MessageCommand("", "TestSource");
+        var expectedException = new ArgumentException("HL7 message cannot be null or empty");
+
+        _mockParser.Setup(x => x.ParseMessage(command.HL7Message))
+                  .Throws(expectedException);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.ParsedMessage.Should().BeNull();
+        result.ErrorMessage.Should().Contain("HL7 message cannot be null or empty");
+
+        _mockParser.Verify(x => x.ParseMessage(command.HL7Message), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WithNullCommand_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        var act = async () => await _handler.Handle(null!, CancellationToken.None);
+        await act.Should().ThrowAsync<ArgumentNullException>()
+                 .WithParameterName("command");
+    }
+
+    [Fact]
+    public async Task Handle_WhenParserThrowsUnexpectedException_ShouldReturnFailureResult()
+    {
+        // Arrange
+        var command = new ProcessHL7MessageCommand("MSH|test", "TestSource");
+        var unexpectedException = new InvalidOperationException("Unexpected error");
+
+        _mockParser.Setup(x => x.ParseMessage(command.HL7Message))
+                  .Throws(unexpectedException);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.ParsedMessage.Should().BeNull();
+        result.ErrorMessage.Should().Contain("An unexpected error occurred while processing the HL7 message");
+        result.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task Handle_WithCancellationToken_ShouldRespectCancellation()
+    {
+        // Arrange
+        var command = new ProcessHL7MessageCommand("MSH|test", "TestSource");
+        var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        // Act & Assert
+        var act = async () => await _handler.Handle(command, cancellationTokenSource.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }
