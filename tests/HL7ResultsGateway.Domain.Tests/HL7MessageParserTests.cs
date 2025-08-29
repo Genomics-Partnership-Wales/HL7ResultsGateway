@@ -1,4 +1,11 @@
-﻿namespace HL7ResultsGateway.Domain.Tests;
+﻿using FluentAssertions;
+using Xunit;
+using HL7ResultsGateway.Domain.Services;
+using HL7ResultsGateway.Domain.ValueObjects;
+using HL7ResultsGateway.Domain.Exceptions;
+using HL7ResultsGateway.Domain.Entities;
+
+namespace HL7ResultsGateway.Domain.Tests;
 
 public class HL7MessageParserTests
 {

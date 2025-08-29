@@ -1,3 +1,5 @@
+using HL7ResultsGateway.Domain.Entities;
+
 namespace HL7ResultsGateway.Domain.Services;
 
 public class HL7MessageParser : IHL7MessageParser
