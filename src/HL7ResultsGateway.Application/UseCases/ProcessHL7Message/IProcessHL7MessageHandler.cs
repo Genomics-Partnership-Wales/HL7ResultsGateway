@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
 
 public interface IProcessHL7MessageHandler
