@@ -1,6 +1,6 @@
+using System.Text;
 
 using FluentAssertions;
-using System.Text;
 
 using HL7ResultsGateway.API;
 using HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
@@ -56,8 +56,10 @@ public class ProcessHL7MessageTests
 
         // Assert
         result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        Assert.NotNull(okResult.Value);
+        var okResult = result.As<OkObjectResult>();
+
+        var response = okResult.Value;
+        response.Should().NotBeNull();
 
         // Verify handler was called with correct parameters
         _mockHandler.Verify(h => h.Handle(
@@ -76,15 +78,16 @@ public class ProcessHL7MessageTests
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
-        var badRequestResult = (BadRequestObjectResult)result;
-        Assert.NotNull(badRequestResult.Value);
-        var response = badRequestResult.Value!;
+        var badRequestResult = result.As<BadRequestObjectResult>();
+
+        var response = badRequestResult.Value;
+        response.Should().NotBeNull();
 
         // Check that error message is present
-        var responseType = response.GetType();
+        var responseType = response!.GetType();
         var errorProperty = responseType.GetProperty("error");
-        Assert.NotNull(errorProperty);
-        Assert.Equal("Request body cannot be empty", errorProperty.GetValue(response));
+        errorProperty.Should().NotBeNull();
+        errorProperty!.GetValue(response).Should().Be("Request body cannot be empty");
     }
 
     [Fact]
@@ -108,18 +111,19 @@ public class ProcessHL7MessageTests
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
-        var badRequestResult = (BadRequestObjectResult)result;
-        Assert.NotNull(badRequestResult.Value);
-        var response = badRequestResult.Value!;
+        var badRequestResult = result.As<BadRequestObjectResult>();
 
-        var responseType = response.GetType();
+        var response = badRequestResult.Value;
+        response.Should().NotBeNull();
+
+        var responseType = response!.GetType();
         var successProperty = responseType.GetProperty("success");
         var errorProperty = responseType.GetProperty("error");
 
-        Assert.NotNull(successProperty);
-        Assert.NotNull(errorProperty);
-        Assert.Equal(false, successProperty.GetValue(response));
-        Assert.Equal("Invalid HL7 message format", errorProperty.GetValue(response));
+        successProperty.Should().NotBeNull();
+        errorProperty.Should().NotBeNull();
+        successProperty!.GetValue(response).Should().Be(false);
+        errorProperty!.GetValue(response).Should().Be("Invalid HL7 message format");
     }
 
     [Fact]
@@ -137,7 +141,7 @@ public class ProcessHL7MessageTests
 
         // Assert
         result.Should().BeOfType<StatusCodeResult>();
-        var statusResult = (StatusCodeResult)result;
+        var statusResult = result.As<StatusCodeResult>();
         statusResult.StatusCode.Should().Be(500);
     }
 

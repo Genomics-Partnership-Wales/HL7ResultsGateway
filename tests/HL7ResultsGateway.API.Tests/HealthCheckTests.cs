@@ -1,3 +1,5 @@
+using FluentAssertions;
+
 using HL7ResultsGateway.API;
 
 using Microsoft.AspNetCore.Http;
@@ -29,28 +31,28 @@ public class HealthCheckTests
         var result = _healthCheck.Run(mockRequest.Object);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = (OkObjectResult)result;
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result.As<OkObjectResult>();
 
         // Verify the response contains expected properties
         var response = okResult.Value;
-        Assert.NotNull(response);
+        response.Should().NotBeNull();
 
         // Check that the response has the expected structure using reflection
-        var responseType = response.GetType();
+        var responseType = response!.GetType();
         var statusProperty = responseType.GetProperty("status");
         var timestampProperty = responseType.GetProperty("timestamp");
         var serviceProperty = responseType.GetProperty("service");
         var versionProperty = responseType.GetProperty("version");
 
-        Assert.NotNull(statusProperty);
-        Assert.NotNull(timestampProperty);
-        Assert.NotNull(serviceProperty);
-        Assert.NotNull(versionProperty);
+        statusProperty.Should().NotBeNull();
+        timestampProperty.Should().NotBeNull();
+        serviceProperty.Should().NotBeNull();
+        versionProperty.Should().NotBeNull();
 
-        Assert.Equal("healthy", statusProperty!.GetValue(response));
-        Assert.Equal("HL7 Results Gateway API", serviceProperty!.GetValue(response));
-        Assert.Equal("1.0.0", versionProperty!.GetValue(response));
+        statusProperty!.GetValue(response).Should().Be("healthy");
+        serviceProperty!.GetValue(response).Should().Be("HL7 Results Gateway API");
+        versionProperty!.GetValue(response).Should().Be("1.0.0");
     }
 
     [Fact]
