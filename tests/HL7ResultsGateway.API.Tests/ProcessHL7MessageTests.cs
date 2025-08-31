@@ -1,13 +1,16 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Moq;
 using System.Text;
+
 using HL7ResultsGateway.API;
 using HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
 using HL7ResultsGateway.Domain.Entities;
 using HL7ResultsGateway.Domain.ValueObjects;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+
+using Moq;
 
 namespace HL7ResultsGateway.API.Tests;
 

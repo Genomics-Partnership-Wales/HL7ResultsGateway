@@ -1,8 +1,10 @@
+using HL7ResultsGateway.API;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Moq;
-using HL7ResultsGateway.API;
 
 namespace HL7ResultsGateway.API.Tests;
 
