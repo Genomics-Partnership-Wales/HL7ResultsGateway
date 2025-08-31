@@ -1,8 +1,7 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-
-using System.Net;
 
 namespace HL7ResultsGateway.API;
 
@@ -16,13 +15,10 @@ public class HealthCheck
     }
 
     [Function("HealthCheck")]
-    public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "health")] HttpRequestData req)
+    public IActionResult Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "health")] HttpRequest req)
     {
         _logger.LogInformation("Health check endpoint called");
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "application/json; charset=utf-8");
 
         var healthStatus = new
         {
@@ -33,8 +29,6 @@ public class HealthCheck
             environment = Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT") ?? "Development"
         };
 
-        await response.WriteAsJsonAsync(healthStatus);
-
-        return response;
+        return new OkObjectResult(healthStatus);
     }
 }

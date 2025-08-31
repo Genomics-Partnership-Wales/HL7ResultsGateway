@@ -1,0 +1,70 @@
+### Health Check Endpoint
+GET http://localhost:7071/api/health
+Accept: application/json
+
+### Health Check Endpoint - Alternative Format
+GET http://localhost:7071/api/health
+Content-Type: application/json
+
+###
+
+### Process HL7 Message - Valid ORU^R01 Message
+POST http://localhost:7071/api/hl7/process
+Content-Type: text/plain
+
+MSH|^~\&|GHH LAB|ELAB-3|GHH OE|BLDG4|200202150930||ORU^R01|CNTRL-3456|P|2.4
+PID|||555-44-4444||EVERYWOMAN^EVE^E^^^^L|JONES|196203520|F|||153 FERNWOOD DR^^STATESVILLE^OH^35292||(206)3345232|(206)752-121||||AC555444444||67-A4335^OH^20030520
+OBR|1|845439^GHH OE|1045813^GHH LAB|1554-5^GLUCOSE^POST 12H CFST:MCNC:PT:SER/PLAS:QN||200202150730|||||||||DOBBS^MARK^A||||||||200202150930||F|||^^^^^R
+OBX|1|NM|1554-5^GLUCOSE^POST 12H CFST:MCNC:PT:SER/PLAS:QN|182|mg/dl|70_105|H|||F
+
+###
+
+### Process HL7 Message - Empty Body (Should Return BadRequest)
+POST http://localhost:7071/api/hl7/process
+Content-Type: text/plain
+
+###
+
+### Process HL7 Message - Invalid HL7 Format
+POST http://localhost:7071/api/hl7/process
+Content-Type: text/plain
+
+This is not a valid HL7 message format
+
+###
+
+### Process HL7 Message - ADT^A01 Message (Patient Admission)
+POST http://localhost:7071/api/hl7/process
+Content-Type: text/plain
+
+MSH|^~\&|SENDING_APPLICATION|SENDING_FACILITY|RECEIVING_APPLICATION|RECEIVING_FACILITY|20110613083617||ADT^A01|123456789|P|2.5
+EVN|A01|201106130836|||JSMITH
+PID|1||123456789^^^MR^MR||DOE^JOHN^MIDDLE||19800101|M||W|123 MAIN ST^^ANYTOWN^NY^12345^USA||(555)555-1234|(555)555-5678|EN|M|NONE|12345678|123456789|||||||||||||||||
+NK1|1|DOE^JANE|SPO|123 MAIN ST^^ANYTOWN^NY^12345^USA|(555)555-1234
+PV1|1|I|2000^2012^01||||123456^SMITH^JOHN|||SUR|||A|||123456^SMITH^JOHN|INP|CAT|2|||||||||||||||||||||201106130836
+
+###
+
+### Process HL7 Message - Lab Result with Multiple Observations
+POST http://localhost:7071/api/hl7/process
+Content-Type: text/plain
+
+MSH|^~\&|LAB|LAB_FACILITY|EMR|EMR_FACILITY|20110613083617||ORU^R01|MSG123456|P|2.5
+PID|1||MRN12345^^^MR^MR||PATIENT^TEST^M||19750315|M||W|456 OAK ST^^TESTCITY^CA^90210^USA||(555)123-4567|(555)765-4321|EN|M|NONE|SSN123456789|DL987654321
+OBR|1|ORD123456^EMR|LAB123456^LAB|CBC^COMPLETE BLOOD COUNT||20110613083000|||||||20110613083000|BLOOD^Blood|DOC123^DOCTOR^ORDERING|||||||20110613084500||F|||^^^^^R
+OBX|1|NM|WBC^WHITE BLOOD COUNT|7.5|10*3/uL|4.5-11.0|N|||F|||20110613084500
+OBX|2|NM|RBC^RED BLOOD COUNT|4.2|10*6/uL|4.2-5.4|N|||F|||20110613084500
+OBX|3|NM|HGB^HEMOGLOBIN|13.5|g/dL|12.0-15.5|N|||F|||20110613084500
+OBX|4|NM|HCT^HEMATOCRIT|40.5|%|37.0-48.0|N|||F|||20110613084500
+
+###
+
+### Process HL7 Message - JSON Content Type (Should Return UnsupportedMediaType)
+POST http://localhost:7071/api/hl7/process
+Content-Type: application/json
+
+{
+  "message": "This should not be accepted as HL7"
+}
+
+###

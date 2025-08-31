@@ -8,9 +8,12 @@ using Microsoft.Extensions.Hosting;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
-// Configure Function Worker Defaults
-builder.Services.AddApplicationInsightsTelemetryWorkerService();
-builder.Services.ConfigureFunctionsApplicationInsights();
+builder.ConfigureFunctionsWebApplication();
+
+// Configure Application Insights
+builder.Services
+    .AddApplicationInsightsTelemetryWorkerService()
+    .ConfigureFunctionsApplicationInsights();
 
 // Register application services
 builder.Services.AddScoped<IHL7MessageParser, HL7MessageParser>();

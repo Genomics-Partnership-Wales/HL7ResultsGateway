@@ -1,10 +1,10 @@
 using HL7ResultsGateway.Application.UseCases.ProcessHL7Message;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
-using System.Net;
 using System.Text;
 
 namespace HL7ResultsGateway.API;
@@ -23,8 +23,8 @@ public class ProcessHL7Message
     }
 
     [Function("ProcessHL7Message")]
-    public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "hl7/process")] HttpRequestData req,
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "hl7/process")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Processing HL7 message request");
@@ -32,33 +32,28 @@ public class ProcessHL7Message
         try
         {
             // Read the request body
-            var requestBody = await req.ReadAsStringAsync();
+            using var reader = new StreamReader(req.Body, Encoding.UTF8);
+            var requestBody = await reader.ReadToEndAsync(cancellationToken);
 
             if (string.IsNullOrEmpty(requestBody))
             {
                 _logger.LogWarning("Received empty request body");
-                var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                badResponse.Headers.Add("Content-Type", "application/json; charset=utf-8");
-                await badResponse.WriteAsJsonAsync(new { error = "Request body cannot be empty" });
-                return badResponse;
+                return new BadRequestObjectResult(new { error = "Request body cannot be empty" });
             }
 
             // Get source from query parameters or headers
-            var source = req.Query["source"]
-                        ?? req.Headers.GetValues("X-Source")?.FirstOrDefault()
+            var source = req.Query["source"].FirstOrDefault()
+                        ?? req.Headers["X-Source"].FirstOrDefault()
                         ?? "Unknown";
 
             // Create command and process
             var command = new ProcessHL7MessageCommand(requestBody, source);
             var result = await _handler.Handle(command, cancellationToken);
 
-            var response = req.CreateResponse(result.Success ? HttpStatusCode.OK : HttpStatusCode.BadRequest);
-            response.Headers.Add("Content-Type", "application/json; charset=utf-8");
-
             if (result.Success)
             {
                 _logger.LogInformation("Successfully processed HL7 message from source: {Source}", source);
-                await response.WriteAsJsonAsync(new
+                return new OkObjectResult(new
                 {
                     success = true,
                     processedAt = result.ProcessedAt,
@@ -70,23 +65,18 @@ public class ProcessHL7Message
             else
             {
                 _logger.LogWarning("Failed to process HL7 message: {Error}", result.ErrorMessage);
-                await response.WriteAsJsonAsync(new
+                return new BadRequestObjectResult(new
                 {
                     success = false,
                     error = result.ErrorMessage,
                     processedAt = result.ProcessedAt
                 });
             }
-
-            return response;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error processing HL7 message");
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            errorResponse.Headers.Add("Content-Type", "application/json; charset=utf-8");
-            await errorResponse.WriteAsJsonAsync(new { error = "Internal server error" });
-            return errorResponse;
+            return new StatusCodeResult(500);
         }
     }
 }

@@ -46,9 +46,9 @@ public class HealthCheckTests
         Assert.NotNull(serviceProperty);
         Assert.NotNull(versionProperty);
 
-        Assert.Equal("healthy", statusProperty.GetValue(response));
-        Assert.Equal("HL7 Results Gateway API", serviceProperty.GetValue(response));
-        Assert.Equal("1.0.0", versionProperty.GetValue(response));
+        Assert.Equal("healthy", statusProperty!.GetValue(response));
+        Assert.Equal("HL7 Results Gateway API", serviceProperty!.GetValue(response));
+        Assert.Equal("1.0.0", versionProperty!.GetValue(response));
     }
 
     [Fact]
@@ -65,9 +65,9 @@ public class HealthCheckTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Health check endpoint called")),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Health check endpoint called")),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 }
