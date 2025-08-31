@@ -1,3 +1,5 @@
+
+using FluentAssertions;
 using System.Text;
 
 using HL7ResultsGateway.API;
@@ -53,11 +55,9 @@ public class ProcessHL7MessageTests
         var result = await _processHL7Message.Run(mockRequest, CancellationToken.None);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
+        result.Should().BeOfType<OkObjectResult>();
         var okResult = (OkObjectResult)result;
-
-        var response = okResult.Value;
-        Assert.NotNull(response);
+        Assert.NotNull(okResult.Value);
 
         // Verify handler was called with correct parameters
         _mockHandler.Verify(h => h.Handle(
@@ -75,11 +75,10 @@ public class ProcessHL7MessageTests
         var result = await _processHL7Message.Run(mockRequest, CancellationToken.None);
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(result);
+        result.Should().BeOfType<BadRequestObjectResult>();
         var badRequestResult = (BadRequestObjectResult)result;
-
-        var response = badRequestResult.Value;
-        Assert.NotNull(response);
+        Assert.NotNull(badRequestResult.Value);
+        var response = badRequestResult.Value!;
 
         // Check that error message is present
         var responseType = response.GetType();
@@ -108,11 +107,10 @@ public class ProcessHL7MessageTests
         var result = await _processHL7Message.Run(mockRequest, CancellationToken.None);
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(result);
+        result.Should().BeOfType<BadRequestObjectResult>();
         var badRequestResult = (BadRequestObjectResult)result;
-
-        var response = badRequestResult.Value;
-        Assert.NotNull(response);
+        Assert.NotNull(badRequestResult.Value);
+        var response = badRequestResult.Value!;
 
         var responseType = response.GetType();
         var successProperty = responseType.GetProperty("success");
@@ -138,9 +136,9 @@ public class ProcessHL7MessageTests
         var result = await _processHL7Message.Run(mockRequest, CancellationToken.None);
 
         // Assert
-        Assert.IsType<StatusCodeResult>(result);
+        result.Should().BeOfType<StatusCodeResult>();
         var statusResult = (StatusCodeResult)result;
-        Assert.Equal(500, statusResult.StatusCode);
+        statusResult.StatusCode.Should().Be(500);
     }
 
     private static HttpRequest CreateMockRequest(string body, string source)
