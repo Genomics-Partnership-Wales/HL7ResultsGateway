@@ -1,0 +1,25 @@
+### Health Check Endpoint - Basic Test
+GET http://localhost:7071/api/health
+Accept: application/json
+
+###
+
+### Health Check Endpoint - With Explicit Content Type
+GET http://localhost:7071/api/health
+Content-Type: application/json
+
+###
+
+### Health Check Endpoint - Development Environment
+GET http://localhost:7071/api/health
+Accept: application/json
+X-Environment: Development
+
+###
+
+### Health Check Endpoint - Production Environment (when deployed)
+# GET https://your-function-app.azurewebsites.net/api/health
+# Accept: application/json
+# Authorization: Bearer your-token-here
+
+###
