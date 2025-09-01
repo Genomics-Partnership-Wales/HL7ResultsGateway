@@ -44,5 +44,6 @@
   ],
   "github.copilot.chat.commitMessageGeneration.instructions": [
     { "file": ".github/awesome-copilot/instructions/conventional-commit-message.instructions.md" }
-  ]
+  ],
+  "azureFunctions.projectSubpath": "src\\HL7ResultsGateway.API"
 }
